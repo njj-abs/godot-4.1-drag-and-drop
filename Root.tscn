@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=3 uid="uid://b7lnvt24nh8nn"]
+
+[ext_resource type="Script" path="res://RigidBody3D.gd" id="1_xqayi"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_sgmwf"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_16di3"]
+size = Vector3(1, 0.1, 1)
+
+[node name="Node3D" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.768004, 0.640445, 0, -0.640445, 0.768004, 0, 1.41538, 2.7889)
+
+[node name="RigidBody3D" type="RigidBody3D" parent="."]
+script = ExtResource("1_xqayi")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="RigidBody3D"]
+transform = Transform3D(1, 0, 0, 0, 0.1, 0, 0, 0, 0.5, 0, 0, 0)
+mesh = SubResource("BoxMesh_sgmwf")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D"]
+shape = SubResource("BoxShape3D_16di3")
