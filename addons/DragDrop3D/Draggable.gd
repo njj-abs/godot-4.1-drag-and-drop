@@ -1,78 +1,57 @@
-tool
+@tool
 extends Node
 
 class_name Draggable
 
-signal dragStart(node)
-signal dragStop(node)
-signal dragMove(node, cast)
+signal drag_start(node)
+signal drag_stop(node)
+signal drag_move(node, cast)
 
-export (int, 0,19) var bit = 19
-export var dragStartFn = "onDraggableDragStart"
-export var dragStopFn = "onDraggableDragStop"
-export var dragMoveFn = "onDraggableDragMove"
+var bit = 19
 
-onready var controller = DragDropController
-onready var area_layer = get_parent().get_collision_layer()
-onready var area_mask = get_parent().get_collision_mask()
+@onready var controller = get_node('/root/DragDropController')
+@onready var area_layer = get_parent().get_collision_layer()
+@onready var area_mask = get_parent().get_collision_mask()
 var current = null
-export onready var isDraggable: bool
 var drag_offset = Vector2()
 
-var selected = null
+var hovered = null
 
 func _get_configuration_warning():
-	if not get_parent() is CollisionObject:
+	if not get_parent() is CollisionObject3D:
 		return 'Not under a collision object'
 	return ''
 
-func connectToEvents():
-	var draggable = get_parent()
-	isDraggable = draggable.get_parent().draggable
-
-	if isDraggable:
-		connect("dragMove", draggable, dragMoveFn)
-		connect("dragStart", draggable, dragStartFn)
-		connect("dragStop", draggable, dragStopFn)
-		
-	draggable.connect("mouse_entered", self, "mouseEntered", [draggable])
-	draggable.connect("mouse_exited", self, "mouseExited", [draggable])
-	draggable.connect("input_event", self, "inputEvent")
-	controller.register_draggable(self)
-
 func _ready():
-	if Engine.editor_hint:
+	if Engine.is_editor_hint():
 		set_process(false)
 		return
 	if controller == null:
 		printerr('Missing DragDropController singletron!')
 	else:
-		connectToEvents()
+		var draggable = get_parent()
+		draggable.connect("mouse_entered",Callable(self,"mouse_entered").bind(draggable))
+		draggable.connect("mouse_exited",Callable(self,"mouse_exited").bind(draggable))
+		draggable.connect("input_event",Callable(self,"input_event").bind(draggable))
+		controller.register_draggable(self)
 
-func mouseEntered(node):
-	selected = node
+func mouse_entered(node):
+	hovered = node
 
-func mouseExited(node):
-	selected = null
-
+func mouse_exited(node):
+	hovered = null
+	
 func on_hover(cast):
-	emit_signal("dragMove", self, cast)
+	emit_signal("drag_move", self, cast)
 
-func inputEvent(camera, event, click_position, click_normal, shape_idx):
-	var isLeftMouseButtonClick = event is InputEventMouseButton and event.button_index == BUTTON_LEFT
-	var isTouchOnMobile = event is InputEventScreenTouch
-
-	if isLeftMouseButtonClick or isTouchOnMobile:
+func input_event(camera, event, click_position, click_normal, shape_idx, node):
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.is_pressed():
-			if selected:
-				current = selected.get_parent()
-				if !isDraggable:
-					PubSub.emit_signal("message",{"event":"selected", "data": current} )
-				emit_signal("dragStart", self)
+			if hovered:
+				current = hovered.get_parent()
+				emit_signal("drag_start", self)
 		elif current:
-			emit_signal("dragStop", self)
-
+			emit_signal("drag_stop", self)
 
 func depth_sort(a,b):
 	return b.get_index()<a.get_index()
-

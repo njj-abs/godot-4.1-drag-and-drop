@@ -1,13 +1,20 @@
-[gd_scene load_steps=4 format=3 uid="uid://b7lnvt24nh8nn"]
+[gd_scene load_steps=8 format=3 uid="uid://b7lnvt24nh8nn"]
 
+[ext_resource type="Script" path="res://Root.gd" id="1_vflim"]
 [ext_resource type="Script" path="res://RigidBody3D.gd" id="1_xqayi"]
+[ext_resource type="PackedScene" uid="uid://30ada3p6eekr" path="res://addons/DragDrop3D/Dragable.tscn" id="2_nwhyk"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_sgmwf"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_16di3"]
 size = Vector3(1, 0.1, 1)
 
+[sub_resource type="PlaneMesh" id="PlaneMesh_3hmta"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_2f6dj"]
+
 [node name="Node3D" type="Node3D"]
+script = ExtResource("1_vflim")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.768004, 0.640445, 0, -0.640445, 0.768004, 0, 1.41538, 2.7889)
@@ -22,3 +29,21 @@ skeleton = NodePath("../..")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D"]
 shape = SubResource("BoxShape3D_16di3")
+
+[node name="Dragable" parent="RigidBody3D" instance=ExtResource("2_nwhyk")]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.33061, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D"]
+mesh = SubResource("PlaneMesh_3hmta")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, -1.0039, 0)
+shape = SubResource("BoxShape3D_2f6dj")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.0645323, 0.997916, -2.35504e-08, 3.82678e-08, 2.11249e-08, 1, 0.997916, -0.0645323, -3.68248e-08, 0, 1.14204, 0)
+
+[connection signal="drag_move" from="RigidBody3D/Dragable" to="RigidBody3D" method="_on_dragable_drag_move"]
+[connection signal="drag_start" from="RigidBody3D/Dragable" to="RigidBody3D" method="_on_dragable_drag_start"]
